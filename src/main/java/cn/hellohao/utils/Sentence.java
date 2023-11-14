@@ -1,7 +1,5 @@
 package cn.hellohao.utils;
 
-import com.alibaba.fastjson.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,16 +19,42 @@ public class Sentence {
      */
 
     public static String getURLContent() {
+//        String str = "";
+//        try {
+//            URL url = new URL("https://v1.hitokoto.cn/");
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                str += line;
+//            }
+//            reader.close();
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return str;
+
+
+
+
+
+
+
             String result = "";
-        String urlName = "http://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1";
+            String urlName = "https://v1.hitokoto.cn/";
             try {
                 URL realURL = new URL(urlName);
                 URLConnection conn = realURL.openConnection();
                 conn.setRequestProperty("accept", "*/*");
                 conn.setRequestProperty("connection", "Keep-Alive");
+                //conn.setRequestProperty("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
                 conn.setRequestProperty("user-agent","Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
                 conn.connect();
                 Map<String, List<String>> map = conn.getHeaderFields();
+                for (String s : map.keySet()) {
+                    System.out.println(s + "-->" + map.get(s));
+                }
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
                 String line;
                 while ((line = in.readLine()) != null) {

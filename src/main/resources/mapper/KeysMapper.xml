@@ -6,40 +6,11 @@
     <!-- 查询对象存储key-->
     <select id="selectKeys" parameterType="integer" resultType="cn.hellohao.pojo.Keys">
         SELECT
-            *
+        *
         FROM
-            `keys`
+        `keys`
         WHERE
-            id = #{id}
-    </select>
-    <!-- 查询添加的所有对象存储-->
-    <select id="getStorageName"  resultType="cn.hellohao.pojo.Keys">
-        select id,keyname,storageType from `keys`
-    </select>
-
-    <!-- 查询对象存储有多少种-->
-    <select id="getStorage"  resultType="cn.hellohao.pojo.Keys">
-        SELECT storageType,id,
-               CASE WHEN storageType=1 THEN '网易云'
-                    WHEN storageType=2 THEN '阿里云'
-                    WHEN storageType=3 THEN '又拍云'
-                    WHEN storageType=4 THEN '七牛云'
-                    WHEN storageType=5 THEN '本地'
-                    WHEN storageType=6 THEN '腾讯云'
-                    WHEN storageType=7 THEN 'FTP'
-                    WHEN storageType=8 THEN 'S3协议'
-                    ELSE  '未知' END AS storageName,
-               keyname
-        FROM `keys`  GROUP BY storageType,id,storageName,keyname
-
-    </select>
-
-    <!-- 查询对象存储key-->
-    <select id="getKeys" parameterType="integer" resultType="cn.hellohao.pojo.Keys">
-        SELECT
-            *
-        FROM
-            `keys`
+        storageType = #{storageType}
     </select>
 
     <update id="updateKey" parameterType="cn.hellohao.pojo.Keys">
@@ -48,10 +19,7 @@
         AccessSecret = #{AccessSecret},
         Endpoint = #{Endpoint},
         Bucketname = #{Bucketname},
-        RequestAddress = #{RequestAddress},
-        keyname = #{keyname},
-        Region = #{Region},
-        RootPath = #{RootPath}
+        RequestAddress = #{RequestAddress}
         WHERE
             storageType = #{storageType}
     </update>

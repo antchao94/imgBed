@@ -12,141 +12,41 @@
         a.updatetime,
         a.sizes,
         a.abnormal,
-        a.source,
-        a.imgtype,
-        a.explains,
-        a.md5key,
-        a.imguid,
-        a.format,
-        a.about,
-        a.violation,
-        a.idname
+        a.source
         FROM
         imgdata a
         LEFT JOIN user b ON a.userid = b.id
         where
         1=1
+        <if test="userid != null">
+            and
+            userid = #{userid}
+        </if>
         <if test="source != null">
             and
-            a.source = #{source}
+            source = #{source}
         </if>
         <if test="starttime != null">
             and
-            a.updatetime &gt;= #{starttime}
+            updatetime &gt;= #{starttime}
         </if>
         <if test="stoptime != null">
             and
-            a.updatetime &lt;= #{stoptime}
+            updatetime &lt;= #{stoptime}
         </if>
-        <if test="violation == 'true'">
-            and
-            a.violation !=""
-        </if>
-
-        <choose>
-            <when test="userid!=null and userid!=''">
-                and
-                a.userid = #{userid}
-            </when>
-            <otherwise>
-                <if test="username != null and username != ''">
-                    <choose>
-                        <when test="selecttype==1">
-                            and
-                            a.userid in ( SELECT id  from `user` where username LIKE '%${username}%')
-                        </when>
-                        <otherwise>
-                            and
-                            a.userid not in ( SELECT id  from `user` where username LIKE '%${username}%')
-                        </otherwise>
-                    </choose>
-                </if>
-            </otherwise>
-        </choose>
-        <if test="imguid != null">
-            and
-            a.imguid = #{imguid}
-        </if>
-        <if test="searchname != null">
-            and CONCAT(
-            imgurl,
-            idname
-            ) LIKE '%${searchname}%'
-        </if>
-        <if test="idname != null and idname !=''">
-            and idname LIKE '%${idname}%'
-        </if>
-        order by
-        <choose>
-            <when test="order == 'desc'">
-                a.updatetime desc
-            </when>
-            <when test="order == 'asc'">
-                a.updatetime asc
-            </when>
-            <when test="order == 'sizeAsc'">
-                CONVERT(a.sizes,SIGNED) asc
-            </when>
-            <when test="order == 'sizeDesc'">
-                CONVERT(a.sizes,SIGNED) desc
-            </when>
-            <otherwise>
-                a.updatetime desc
-            </otherwise>
-        </choose>
-<!--        <if test="order == 'desc'">-->
-<!--            a.updatetime desc-->
-<!--        </if>-->
-<!--        <if test="order == 'asc'">-->
-<!--            a.updatetime asc-->
-<!--        </if>-->
-<!--        <if test="order == 'sizeAsc'">-->
-<!--            CONVERT(a.sizes,SIGNED) asc-->
-<!--        </if>-->
-<!--        <if test="order == 'sizeDesc'">-->
-<!--            CONVERT(a.sizes,SIGNED) desc-->
-<!--        </if>-->
-
+        order by id desc
     </select>
-
-    <insert  id="insertImgData" parameterType="cn.hellohao.pojo.Images">
-        INSERT INTO imgdata (
-            id,
-            imgname,
-            imgurl,
-            userid,
-            updatetime,
-            sizes,
-            abnormal,
-            `source`,
-            imgtype,
-            explains,
-            md5key,
-            imguid,
-            `format`,
-            about,
-            violation,
-            idname
-        )
-        VALUES (null, #{imgname}, #{imgurl}, #{userid}, #{updatetime},#{sizes},#{abnormal},#{source},#{imgtype},
-                #{explains},#{md5key},#{imguid},#{format},#{about},null,#{idname})
-    </insert>
-
-
     <!-- 此用户下总数 -->
     <select id="countimg" parameterType="integer" resultType="integer">
         select count(*) from imgdata where userid = #{userid}
     </select>
 
-    <delete id="deleimg" parameterType="Long">
+    <delete id="deleimg" parameterType="integer">
         DELETE FROM imgdata WHERE id=#{id}
     </delete>
 
-    <delete id="deleimgForImgUid" parameterType="string">
-        DELETE FROM imgdata WHERE imguid = #{imguid}
-    </delete>
 
-    <select id="selectByPrimaryKey" parameterType="Long" resultType="cn.hellohao.pojo.Images">
+    <select id="selectByPrimaryKey" parameterType="integer" resultType="cn.hellohao.pojo.Images">
         select * from imgdata where id = #{id}
     </select>
 
@@ -158,25 +58,9 @@
         </if>
     </select>
 
-    <!-- 根据图片名字标记IP -->
-    <update id="setImg" parameterType="cn.hellohao.pojo.Images">
-         UPDATE imgdata
-             <set>
-                 <if test="abnormal!=null">
-                     abnormal=#{abnormal}
-                 </if>
-                 <if test="explains!=null">
-                     explains=#{explains}
-                 </if>
-                 <if test="idname!=null and idname!=''">
-                     idname=#{idname}
-                 </if>
-                 <if test="violation!=null and violation!=''">
-                     violation=#{violation}
-                 </if>
-
-             </set>
-              where imgname=#{imgname}
+    <!-- 根据图片名字标记非法提示 -->
+    <update id="setabnormal" parameterType="string">
+         UPDATE imgdata set abnormal=1 where imgname=#{imgname}
     </update>
     <!-- 非法图片删除他  根据名称-->
     <delete id="deleimgname" parameterType="string">
@@ -184,77 +68,12 @@
     </delete>
 
 <!--    批量删除-->
-    <delete id="deleall" parameterType="Long">
+    <delete id="deleall" parameterType="integer">
         DELETE FROM imgdata WHERE id = #{id}
     </delete>
 
     <select id="gettimeimg" parameterType="string" resultType="cn.hellohao.pojo.Images">
         SELECT * from  imgdata WHERE  updatetime>=#{time}
     </select>
-<!--查询指定用户总内存-->
-    <select id="getusermemory" parameterType="integer" resultType="long">
-        SELECT sum(sizes) as sizes FROM `imgdata` where userid = #{userid}
-    </select>
-
-    <!--  获取指定对象存储的已用空间 -->
-    <select id="getsourcememory" parameterType="integer" resultType="long">
-        SELECT sum(sizes) as sizes FROM `imgdata` where source = #{source}
-    </select>
-
-    <select id="md5Count" resultType="integer">
-        select count(id) from imgdata where md5key=#{md5key} and userid = #{userid}
-    </select>
-
-    <select id="selectImgUrlByMD5" parameterType="string" resultType="cn.hellohao.pojo.Images">
-        select imgname,imgurl from imgdata where md5key = #{md5key}
-        <if test="userid != null">
-            and userid = #{userid}
-        </if>
-    </select>
-
-    <!--    查询当前用户的近20条数据-->
-    <select id="RecentlyUploaded" parameterType="integer" resultType="cn.hellohao.pojo.Images">
-        select * from imgdata where userid = #{userid}  ORDER BY updatetime DESC LIMIT 20
-    </select>
-
-    <select id="RecentlyUser" resultType="cn.hellohao.pojo.User">
-        select count(i.id) as counts ,i.userid,u.username from imgdata i
-         LEFT JOIN `user` u on i.userid = u.id
-        where i.userid not in (0)
-        GROUP BY i.userid ORDER BY counts DESC LIMIT 20
-    </select>
-
-
-
-    <select id="getyyyy" parameterType="integer" resultType="string">
-        SELECT DISTINCT  YEAR(updatetime) yyyy FROM `imgdata` where
-        IFNULL(updatetime,'')
-        <if test="userid != null">
-            and userid = #{userid}
-        </if>
-    </select>
-
-
-    <select id="countByM" parameterType="cn.hellohao.pojo.Images"  resultType="cn.hellohao.pojo.Images">
-        SELECT
-        count(id) countNum,
-        MONTH(updatetime) monthNum
-        FROM
-        imgdata
-        where YEAR(updatetime)=#{yyyy}
-        <if test="userid != null">
-            and userid = #{userid}
-        </if>
-        GROUP BY
-        MONTH(updatetime)
-        ORDER BY
-        MONTH(updatetime) ASC
-
-    </select>
-
-    <select id="selectImgUrlByImgUID" parameterType="string" resultType="cn.hellohao.pojo.Images">
-        select * from imgdata where imguid = #{imguid}
-    </select>
-
 
 </mapper>
